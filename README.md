@@ -12,4 +12,5 @@ heroku config:set TELEGRAM_TOKEN=<YOUR-TOKEN> # set config vars, insert your own
 ```
 
 To start the bot, run: `./start.sh`.
+
 To stop the bot, run: `./stop.sh`.
