@@ -2,10 +2,10 @@
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
-import click
+import logging
+import os
 from telegram.ext import Updater, CommandHandler
 import telegram.parsemode
-import logging
 
 from random_emoji import random_emoji
 
@@ -15,19 +15,20 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+TOKEN = os.getenv('TELEGRAM_TOKEN')
+
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
-def start(bot, update, chat_data):
-    chat_data['n'] = 7
-    #update.message.reply_text('Hi! Use /set <n> to set the number of emojis (default is n=7)')
+def start(bot, update):
     with open('help.md', 'r') as f:
         help_txt = f.read()
     update.message.reply_text(help_txt, parse_mode=telegram.parsemode.ParseMode.MARKDOWN)
 
 
 def display_emoji(bot, update, chat_data):
-    emojis = [random_emoji()[0] for i in range(chat_data['n'])]
+    n = chat_data.get('n', 7)
+    emojis = [random_emoji()[0] for i in range(n)]
     update.message.reply_text(''.join(emojis))
 
 
@@ -55,17 +56,15 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-@click.command()
-@click.option('--token', help='token do seu bot')
-def main(token):
+def main():
     """Run bot."""
-    updater = Updater(token)
+    updater = Updater(TOKEN)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start, pass_chat_data=True))
+    dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", start))
     dp.add_handler(CommandHandler("set", set_number_emojis,
                                   pass_args=True,
